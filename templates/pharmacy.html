@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Manage {{ pharmacy.name }}</h1>
+    <p>Update your medicine stock levels.</p>
+    
+    <!-- Add/Update Stock Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Add/Update Medicine Stock</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="medicine_name" class="form-label">Medicine Name</label>
+                        <input type="text" class="form-control" id="medicine_name" name="medicine_name" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" min="0" required>
+                    </div>
+                    <div class="col-md-2 mb-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Update Stock</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Current Stock -->
+    <div class="card">
+        <div class="card-header">
+            <h5>Current Stock</h5>
+        </div>
+        <div class="card-body">
+            {% if stocks %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Medicine</th>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stock in stocks %}
+                            <tr>
+                                <td>{{ stock.medicine.name }}</td>
+                                <td>{{ stock.medicine.description or 'N/A' }}</td>
+                                <td>{{ stock.quantity }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No stock added yet. Add your first medicine above.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

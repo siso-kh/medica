@@ -14,7 +14,7 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), nullable=False, default='patient')  # 'patient', 'doctor', or 'admin'
+    role = db.Column(db.String(20), nullable=False, default='patient')  # 'patient', 'doctor', 'admin', 'pharmacy'
     is_vip = db.Column(db.Boolean, default=False, nullable=False)
     balance = db.Column(db.Float, default=0.0, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -31,6 +31,13 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         """Check password against hash"""
         return check_password_hash(self.password_hash, password)
+    
+    @property
+    def pharmacy(self):
+        """Get pharmacy for pharmacy users"""
+        if self.role == 'pharmacy':
+            return Pharmacy.query.filter_by(user_id=self.id).first()
+        return None
     
     def __repr__(self):
         return f'<User {self.email}>'
@@ -119,6 +126,7 @@ class Pharmacy(db.Model):
     address = db.Column(db.String(255), nullable=False)
     lat = db.Column(db.Float, nullable=False, index=True)  # Added index for faster distance queries
     lng = db.Column(db.Float, nullable=False, index=True)  # Added index for faster distance queries
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), unique=True, nullable=True)  # Link to pharmacy user
     
     # Relationships
     stocks = db.relationship('PharmacyStock', backref='pharmacy', lazy='dynamic', cascade='all, delete-orphan')

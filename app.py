@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_login import LoginManager
-from models import db, User
+from models import db, User, Pharmacy  # Add Pharmacy import
 from config import Config
 
 # Initialize extensions
@@ -24,6 +24,9 @@ def create_app(config_class=Config):
     # Initialize extensions with app
     db.init_app(app)
     login_manager.init_app(app)
+    
+    # Add Pharmacy to Jinja globals for template access
+    app.jinja_env.globals['Pharmacy'] = Pharmacy
     
     # Register blueprints
     from routes import bp as routes_bp

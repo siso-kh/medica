@@ -104,6 +104,27 @@ def register():
             db.session.add(doctor_profile)
             db.session.commit()
         
+        # If pharmacy, create pharmacy entry
+        if role == 'pharmacy':
+            pharmacy_name = request.form.get('pharmacy_name', '')
+            address = request.form.get('address', '')
+            lat = request.form.get('lat', type=float)
+            lng = request.form.get('lng', type=float)
+            
+            if not pharmacy_name or not address or lat is None or lng is None:
+                flash('Please provide pharmacy details.', 'danger')
+                return render_template('register.html')
+            
+            pharmacy = Pharmacy(
+                name=pharmacy_name,
+                address=address,
+                lat=lat,
+                lng=lng,
+                user_id=user.id
+            )
+            db.session.add(pharmacy)
+            db.session.commit()
+    
         flash('Registration successful! Please login.', 'success')
         return redirect(url_for('routes.login'))
     
@@ -567,4 +588,99 @@ def my_availability():
     
     availabilities = doctor.availabilities.order_by(Availability.day, Availability.start_time).all()
     return render_template('availability.html', availabilities=availabilities)
+
+
+@bp.route('/my-pharmacy', methods=['GET', 'POST'])
+@login_required
+def my_pharmacy():
+    """Pharmacy stock management"""
+    if current_user.role != 'pharmacy':
+        flash('Access denied. Pharmacy account required.', 'danger')
+        return redirect(url_for('routes.index'))
+    
+    pharmacy = Pharmacy.query.filter_by(user_id=current_user.id).first()
+    if not pharmacy:
+        flash('Pharmacy profile not found.', 'danger')
+        return redirect(url_for('routes.index'))
+    
+    if request.method == 'POST':
+        medicine_name = request.form.get('medicine_name', '').strip()
+        quantity = request.form.get('quantity', type=int)
+        
+        if not medicine_name or quantity is None or quantity < 0:
+            flash('Please provide valid medicine name and quantity.', 'danger')
+            return redirect(url_for('routes.my_pharmacy'))
+        
+        # Find or create medicine
+        medicine = Medicine.query.filter_by(name=medicine_name).first()
+        if not medicine:
+            medicine = Medicine(name=medicine_name, description='Added by pharmacy')
+            db.session.add(medicine)
+            db.session.flush()
+        
+        # Update or create stock
+        stock = PharmacyStock.query.filter_by(pharmacy_id=pharmacy.id, medicine_id=medicine.id).first()
+        if stock:
+            stock.quantity = quantity
+        else:
+            stock = PharmacyStock(pharmacy_id=pharmacy.id, medicine_id=medicine.id, quantity=quantity)
+            db.session.add(stock)
+        
+        db.session.commit()
+        flash('Stock updated successfully!', 'success')
+        return redirect(url_for('routes.my_pharmacy'))
+    
+    # Get current stock
+    stocks = PharmacyStock.query.filter_by(pharmacy_id=pharmacy.id).all()
+    return render_template('pharmacy.html', pharmacy=pharmacy, stocks=stocks)
+
+
+@bp.route('/pharmacy/<int:pharmacy_id>')
+def pharmacy_profile(pharmacy_id):
+    """Individual pharmacy profile page"""
+    pharmacy = Pharmacy.query.get_or_404(pharmacy_id)
+    stocks = PharmacyStock.query.filter_by(pharmacy_id=pharmacy_id).all()
+    
+    return render_template('pharmacy_profile.html', pharmacy=pharmacy, stocks=stocks)
+
+
+@bp.route('/my-profile')
+@login_required
+def my_profile():
+    """Redirect to user's profile based on role"""
+    if current_user.role == 'doctor':
+        if current_user.doctor_profile:
+            return redirect(url_for('routes.doctor_profile', doctor_id=current_user.doctor_profile.id))
+        else:
+            # Create default doctor profile if missing
+            doctor_profile = DoctorProfile(
+                user_id=current_user.id,
+                specialty='General Medicine',
+                address='Default Address',
+                phone='',
+                bio='Please update your profile information.'
+            )
+            db.session.add(doctor_profile)
+            db.session.commit()
+            flash('Doctor profile created. Please update your information.', 'info')
+            return redirect(url_for('routes.doctor_profile', doctor_id=doctor_profile.id))
+    elif current_user.role == 'pharmacy':
+        pharmacy = Pharmacy.query.filter_by(user_id=current_user.id).first()
+        if pharmacy:
+            return redirect(url_for('routes.pharmacy_profile', pharmacy_id=pharmacy.id))
+        else:
+            # Create default pharmacy if missing
+            pharmacy = Pharmacy(
+                name=f"{current_user.name}'s Pharmacy",
+                address='Default Address, Tunisia',
+                lat=36.8, lng=10.2,  # Default location in Tunisia
+                user_id=current_user.id
+            )
+            db.session.add(pharmacy)
+            db.session.commit()
+            flash('Pharmacy profile created. Please update your information.', 'info')
+            return redirect(url_for('routes.pharmacy_profile', pharmacy_id=pharmacy.id))
+    else:
+        flash('No profile available for your role.', 'info')
+        return redirect(url_for('routes.index'))
 

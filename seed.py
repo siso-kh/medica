@@ -21,9 +21,9 @@ def seed_database():
         db.session.query(User).delete()
         db.session.commit()
 
-        # Seed users (patients, doctors, admins)
+        # Seed users (patients, doctors, admins, pharmacies)
         users = []
-        roles = ['patient', 'doctor', 'admin']
+        roles = ['patient', 'doctor', 'admin', 'pharmacy']
         for _ in range(70):  # Adjust number as needed
             role = random.choice(roles)
             user = User(
@@ -88,14 +88,26 @@ def seed_database():
             db.session.add(medicine)
         db.session.commit()
 
-        # Seed pharmacies
+        # Seed pharmacies (link to pharmacy users)
         pharmacies = []
-        for _ in range(20):  # Adjust number as needed
+        pharmacy_users = [u for u in users if u.role == 'pharmacy']
+        for i, user in enumerate(pharmacy_users):
             pharmacy = Pharmacy(
                 name=fake.company() + ' Pharmacy',
                 address=fake.address(),
-                lat=round(random.uniform(32.0, 38.0), 6),  # Random lat around Tunisia (32° to 38° N)
-                lng=round(random.uniform(7.0, 12.0), 6)   # Random lng around Tunisia (7° to 12° E)
+                lat=round(random.uniform(32.0, 38.0), 6),  # Random lat around Tunisia
+                lng=round(random.uniform(7.0, 12.0), 6),   # Random lng around Tunisia
+                user_id=user.id
+            )
+            pharmacies.append(pharmacy)
+            db.session.add(pharmacy)
+        # Add more pharmacies without users if needed
+        for _ in range(max(0, 20 - len(pharmacy_users))):
+            pharmacy = Pharmacy(
+                name=fake.company() + ' Pharmacy',
+                address=fake.address(),
+                lat=round(random.uniform(32.0, 38.0), 6),
+                lng=round(random.uniform(7.0, 12.0), 6)
             )
             pharmacies.append(pharmacy)
             db.session.add(pharmacy)

@@ -59,12 +59,43 @@
                         <a class="nav-link" href="{{ url_for('routes.admin_dashboard') }}">Admin</a>
                     </li>
                     {% endif %}
+                    {% if current_user.is_authenticated and current_user.role == 'doctor' and current_user.doctor_profile %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('routes.doctor_profile', doctor_id=current_user.doctor_profile.id) }}">My Profile</a>
+                    </li>
+                    {% endif %}
+                    {% if current_user.is_authenticated and current_user.role == 'pharmacy' %}
+                    {% set pharmacy = Pharmacy.query.filter_by(user_id=current_user.id).first() %}
+                    {% if pharmacy %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('routes.pharmacy_profile', pharmacy_id=pharmacy.id) }}">My Pharmacy Profile</a>
+                    </li>
+                    {% endif %}
+                    {% endif %}
                 </ul>
                 <ul class="navbar-nav">
                     {% if current_user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="btn btn-outline-primary me-2" href="{{ url_for('routes.doctor_profile', doctor_id=current_user.doctor_profile.id) if current_user.role == 'doctor' else '#' }}">Profile</a>
+                            <span class="navbar-text me-3">Welcome, {{ current_user.name }}!</span>
                         </li>
+                        {% if current_user.role == 'doctor' and current_user.doctor_profile %}
+                        <li class="nav-item">
+                            <a class="btn btn-outline-primary me-2" href="{{ url_for('routes.doctor_profile', doctor_id=current_user.doctor_profile.id) }}">My Profile</a>
+                        </li>
+                        {% elif current_user.role == 'pharmacy' and current_user.pharmacy %}
+                        <li class="nav-item">
+                            <a class="btn btn-outline-primary me-2" href="{{ url_for('routes.pharmacy_profile', pharmacy_id=current_user.pharmacy.id) }}">My Profile</a>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="btn btn-outline-primary me-2" href="{{ url_for('routes.my_profile') }}">My Profile</a>
+                        </li>
+                        {% endif %}
+                        {% if not current_user.is_vip %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('routes.upgrade') }}">Upgrade to VIP</a>
+                        </li>
+                        {% endif %}
                         <li class="nav-item">
                             <a class="btn btn-primary" href="{{ url_for('routes.logout') }}">Logout</a>
                         </li>

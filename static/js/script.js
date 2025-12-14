@@ -102,9 +102,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="col-md-6 mb-3">
                             <div class="card h-100 position-relative">
                                 <div class="card-body">
-                                    <h5 class="card-title">${pharm.pharmacy_name}</h5>
+                                    <h5 class="card-title"><a href="/pharmacy/${pharm.pharmacy_id}" class="text-decoration-none">${pharm.pharmacy_name}</a></h5>
                                     <p class="card-text">${pharm.address}</p>
                                     <p class="card-text"><small class="text-muted">${distanceText}</small></p>
+                                    <p class="card-text"><strong>Available Quantity:</strong> ${pharm.quantity}</p>
                                     <a href="https://www.google.com/maps/dir/?api=1&destination=${pharm.lat},${pharm.lng}" target="_blank" class="btn btn-success position-absolute bottom-0 end-0 m-2">Get Directions</a>
                                 </div>
                             </div>
