@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Medica{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section py-5" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); min-height: 70vh; display: flex; align-items: center;">
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Animated Logo -->
+                <div class="mb-4">
+                    <img src="{{ url_for('static', filename='favicon.png') }}" alt="Medica Logo" class="hero-logo" style="width: 120px; height: 120px; animation: heartbeat 1.5s ease-in-out infinite;">
+                </div>
+                
+                <!-- Hero Content -->
+                <h1 class="display-4 fw-bold text-primary mb-3">Welcome to Medica</h1>
+                <p class="lead text-muted mb-4">
+                    Your trusted platform for finding doctors, medicines, and VIP consultations. 
+                    Connect with healthcare professionals and manage your health needs effortlessly.
+                </p>
+                
+                <!-- Call to Action Buttons -->
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="{{ url_for('routes.doctors') }}" class="btn btn-primary btn-lg px-4">
+                        <i class="fas fa-user-md me-2"></i>Find Doctors
+                    </a>
+                    <a href="{{ url_for('routes.medicines') }}" class="btn btn-outline-primary btn-lg px-4">
+                        <i class="fas fa-pills me-2"></i>Find Medicines
+                    </a>
+                    {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('routes.register') }}" class="btn btn-success btn-lg px-4">
+                        <i class="fas fa-user-plus me-2"></i>Get Started
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <!-- Stats or Features -->
+                <div class="row mt-5 pt-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100" style="background: rgba(255,255,255,0.8);">
+                            <div class="card-body text-center">
+                                <i class="fas fa-stethoscope fa-3x text-primary mb-3"></i>
+                                <h5 class="card-title">Expert Doctors</h5>
+                                <p class="card-text">Connect with qualified healthcare professionals across various specialties.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100" style="background: rgba(255,255,255,0.8);">
+                            <div class="card-body text-center">
+                                <i class="fas fa-map-marker-alt fa-3x text-success mb-3"></i>
+                                <h5 class="card-title">Nearby Pharmacies</h5>
+                                <p class="card-text">Locate medicines at pharmacies near you with real-time availability.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100" style="background: rgba(255,255,255,0.8);">
+                            <div class="card-body text-center">
+                                <i class="fas fa-star fa-3x text-warning mb-3"></i>
+                                <h5 class="card-title">VIP Consultations</h5>
+                                <p class="card-text">Get priority access to doctors with our premium VIP consultation service.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Additional Content Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h2 class="mb-4">Why Choose Medica?</h2>
+                <ul class="list-unstyled">
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        Comprehensive doctor directory with ratings and reviews
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        Real-time medicine availability at local pharmacies
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        Secure VIP consultations with top specialists
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success me-3"></i>
+                        Easy appointment booking and health tracking
+                    </li>
+                </ul>
+            </div>
+            <div class="col-lg-6">
+                <img src="{{ url_for('static', filename='favicon.png') }}" alt="Medica Features" class="img-fluid rounded shadow" style="max-width: 400px; animation: heartbeat 2s ease-in-out infinite;">
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+<style>
+@keyframes heartbeat {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+.hero-logo {
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+}
+</style>
+

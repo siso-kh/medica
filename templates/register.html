@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Medica{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-person-plus-fill" style="font-size: 4rem; color: #0EA5E9;"></i>
+                        <h2 class="fw-bold mt-3">Create Account</h2>
+                        <p class="text-muted">Join Medica today</p>
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('routes.register') }}">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required autofocus>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="role" class="form-label">I am a:</label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="patient" selected>Patient</option>
+                                <option value="doctor">Doctor</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Doctor-specific fields (hidden by default) -->
+                        <div id="doctorFields" style="display: none;">
+                            <div class="mb-3">
+                                <label for="specialty" class="form-label">Specialty</label>
+                                <input type="text" class="form-control" id="specialty" name="specialty" placeholder="e.g., Cardiology, Pediatrics">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="address" class="form-label">Address</label>
+                                <input type="text" class="form-control" id="address" name="address">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Phone</label>
+                                <input type="tel" class="form-control" id="phone" name="phone">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="bio" class="form-label">Bio</label>
+                                <textarea class="form-control" id="bio" name="bio" rows="3"></textarea>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 btn-lg">Register</button>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <p class="text-muted">Already have an account? 
+                            <a href="{{ url_for('routes.login') }}" class="text-decoration-none">Login here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+    document.getElementById('role').addEventListener('change', function() {
+        const doctorFields = document.getElementById('doctorFields');
+        if (this.value === 'doctor') {
+            doctorFields.style.display = 'block';
+        } else {
+            doctorFields.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}
+

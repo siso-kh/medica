@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Doctors - Medica{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <h1 class="fw-bold">Browse Doctors</h1>
+            <p class="text-muted">Find the right healthcare professional for you</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <label for="specialtyFilter" class="form-label fw-bold">Specialty</label>
+                        <select class="form-select" id="specialtyFilter">
+                            <option value="">All Specialties</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="ratingFilter" class="form-label fw-bold">Minimum Rating</label>
+                        <input type="range" class="form-range" id="ratingFilter" min="0" max="5" step="0.1" value="0">
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">0</small>
+                            <small class="text-muted" id="ratingValue">0.0</small>
+                            <small class="text-muted">5</small>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary w-100" onclick="filterDoctors()">
+                        <i class="bi bi-funnel"></i> Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Doctors Grid -->
+        <div class="col-md-9">
+            <div id="loading" class="text-center py-5" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            
+            <div id="doctorsGrid" class="row g-4">
+                <!-- Doctors will be loaded here via JavaScript -->
+            </div>
+            
+            <div id="noResults" class="text-center py-5" style="display: none;">
+                <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
+                <p class="text-muted mt-3">No doctors found matching your criteria.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+    let allSpecialties = [];
+    
+    // Load specialties on page load
+    fetch('/api/specialties')
+        .then(response => response.json())
+        .then(specialties => {
+            allSpecialties = specialties;
+            const select = document.getElementById('specialtyFilter');
+            specialties.forEach(specialty => {
+                const option = document.createElement('option');
+                option.value = specialty;
+                option.textContent = specialty;
+                select.appendChild(option);
+            });
+        });
+    
+    // Update rating display
+    document.getElementById('ratingFilter').addEventListener('input', function() {
+        document.getElementById('ratingValue').textContent = parseFloat(this.value).toFixed(1);
+    });
+    
+    // Load doctors
+    function filterDoctors() {
+        const specialty = document.getElementById('specialtyFilter').value;
+        const minRating = document.getElementById('ratingFilter').value;
+        
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('doctorsGrid').innerHTML = '';
+        document.getElementById('noResults').style.display = 'none';
+        
+        let url = '/api/doctors?';
+        if (specialty) url += `specialty=${encodeURIComponent(specialty)}&`;
+        if (minRating > 0) url += `min_rating=${minRating}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(doctors => {
+                document.getElementById('loading').style.display = 'none';
+                
+                if (doctors.length === 0) {
+                    document.getElementById('noResults').style.display = 'block';
+                    return;
+                }
+                
+                const grid = document.getElementById('doctorsGrid');
+                doctors.forEach(doctor => {
+                    const stars = generateStars(doctor.average_rating);
+                    const card = `
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 shadow-sm border-0 doctor-card" onclick="window.location.href='/doctor/${doctor.id}'" style="cursor: pointer;">
+                                <div class="card-body">
+                                    <h5 class="card-title fw-bold">${escapeHtml(doctor.name)}</h5>
+                                    <p class="text-muted mb-2">
+                                        <i class="bi bi-briefcase"></i> ${escapeHtml(doctor.specialty)}
+                                    </p>
+                                    <div class="mb-2">
+                                        ${stars}
+                                        <span class="ms-2">${doctor.average_rating.toFixed(1)}</span>
+                                    </div>
+                                    ${doctor.bio ? `<p class="text-muted small">${escapeHtml(doctor.bio)}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    grid.innerHTML += card;
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('loading').style.display = 'none';
+            });
+    }
+    
+    function generateStars(rating) {
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+        let html = '';
+        
+        for (let i = 0; i < fullStars; i++) {
+            html += '<i class="bi bi-star-fill text-warning"></i>';
+        }
+        
+        if (hasHalfStar) {
+            html += '<i class="bi bi-star-half text-warning"></i>';
+        }
+        
+        const emptyStars = 5 - Math.ceil(rating);
+        for (let i = 0; i < emptyStars; i++) {
+            html += '<i class="bi bi-star text-warning"></i>';
+        }
+        
+        return html;
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Load doctors on page load
+    filterDoctors();
+</script>
+{% endblock %}
+{% endblock %}
+

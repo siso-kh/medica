@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Medica{% endblock %}</title>
+    <!-- Add favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" type="image/png">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Heartbeat animation for the logo */
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .logo-img {
+            animation: heartbeat 1.5s ease-in-out infinite;
+            width: 40px;
+            height: 40px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #e3f2fd;"> <!-- Light blue theme -->
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('routes.index') }}">
+                <!-- Use favicon.png as logo with heartbeat animation -->
+                <img src="{{ url_for('static', filename='favicon.png') }}" alt="Medica Logo" class="logo-img me-2">
+                Medica
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('routes.doctors') }}">Doctors</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('routes.medicines') }}">Medicines</a>
+                    </li>
+                    {% if current_user.is_authenticated and current_user.is_vip %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('routes.vip_consult') }}">VIP Consult</a>
+                    </li>
+                    {% endif %}
+                    {% if current_user.is_authenticated and current_user.role == 'admin' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('routes.admin_dashboard') }}">Admin</a>
+                    </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="btn btn-outline-primary me-2" href="{{ url_for('routes.doctor_profile', doctor_id=current_user.doctor_profile.id) if current_user.role == 'doctor' else '#' }}">Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary" href="{{ url_for('routes.logout') }}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="btn btn-outline-primary me-2" href="{{ url_for('routes.login') }}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary" href="{{ url_for('routes.register') }}">Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light text-center py-3 mt-5">
+        <div class="container">
+            <p>&copy; 2024 Medica. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
+

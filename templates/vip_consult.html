@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}VIP Consult - Medica{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="bi bi-star-fill"></i> VIP Consultation Request
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Your consultation request will be sent to 5 qualified doctors matching your specialty. They will review your case and respond accordingly.
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('routes.vip_consult') }}" enctype="multipart/form-data">
+                        <div class="mb-4">
+                            <label for="specialty" class="form-label fw-bold">Specialty Required</label>
+                            <select class="form-select" id="specialty" name="specialty" required>
+                                <option value="">Select a specialty</option>
+                                {% for spec in specialties %}
+                                <option value="{{ spec }}">{{ spec }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-bold">Consultation Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="6" 
+                                      placeholder="Please describe your medical concern, symptoms, or questions..." required></textarea>
+                            <small class="form-text text-muted">Provide as much detail as possible for better assistance.</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="file" class="form-label fw-bold">Upload Medical Documents (Optional)</label>
+                            <input type="file" class="form-control" id="file" name="file" 
+                                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                            <small class="form-text text-muted">Allowed formats: PDF, DOC, DOCX, JPG, PNG (Max 16MB)</small>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="bi bi-send"></i> Submit Consultation Request
+                            </button>
+                            <a href="{{ url_for('routes.index') }}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- VIP Benefits -->
+            <div class="card shadow-sm border-0 mt-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">VIP Benefits</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Priority access to top-rated doctors</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Multiple doctor consultations per request</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> File upload support for medical documents</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Direct communication channels</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

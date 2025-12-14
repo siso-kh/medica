@@ -1,0 +1,184 @@
+/* Medica - Medical Platform Styles */
+
+:root {
+    --primary-color: #0EA5E9;
+    --secondary-color: #06b6d4;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --light-bg: #f8fafc;
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #ffffff;
+    color: #1e293b;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Navigation */
+.navbar {
+    border-bottom: 2px solid var(--light-bg);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    transition: transform 0.2s;
+}
+
+.navbar-brand:hover {
+    transform: scale(1.05);
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-radius: 0 0 2rem 2rem;
+    margin-bottom: 3rem;
+}
+
+/* Cards */
+.card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-radius: 0.75rem;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+.doctor-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(14, 165, 233, 0.2) !important;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    border-radius: 0.5rem;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #0284c7;
+    border-color: #0284c7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+.btn-outline-primary {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+/* Forms */
+.form-control, .form-select {
+    border-radius: 0.5rem;
+    border: 1px solid #cbd5e1;
+    padding: 0.75rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(14, 165, 233, 0.15);
+}
+
+/* Ratings */
+.bi-star-fill, .bi-star-half, .bi-star {
+    font-size: 1.2rem;
+}
+
+.text-warning {
+    color: #f59e0b !important;
+}
+
+/* Feature Icons */
+.feature-icon {
+    transition: transform 0.3s;
+}
+
+.feature-icon:hover {
+    transform: scale(1.1);
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+    border-top: 2px solid var(--light-bg);
+}
+
+/* Alerts */
+.alert {
+    border-radius: 0.5rem;
+    border: none;
+}
+
+/* Loading Spinner */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-section {
+        border-radius: 0;
+        padding: 2rem 0 !important;
+    }
+    
+    .display-4 {
+        font-size: 2rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Utility Classes */
+.shadow-sm {
+    box-shadow: var(--card-shadow) !important;
+}
+
+.bg-light {
+    background-color: var(--light-bg) !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #0284c7;
+}
+

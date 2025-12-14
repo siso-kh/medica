@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Find Medicine - Medica{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Find Medicines</h1>
+    <form id="medicine-search-form">
+        <div class="mb-3">
+            <label for="medicine-name" class="form-label">Medicine Name</label>
+            <input type="text" class="form-control" id="medicine-name" required>
+        </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="use-location">
+            <label class="form-check-label" for="use-location">Use my location for nearby results</label>
+        </div>
+        <button type="submit" class="btn btn-primary" id="search-button">Search</button>
+    </form>
+    
+    <div id="loading-indicator" class="mt-3" style="display: none;">
+        <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <span>Searching...</span>
+    </div>
+    
+    <div id="search-results" class="mt-3"></div>
+</div>
+
+{% block extra_scripts %}
+<script>
+    document.getElementById('medicine-search-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        searchMedicine();
+    });
+    
+    function searchMedicine() {
+        const medicineName = document.getElementById('medicine-name').value.trim();
+        const useLocation = document.getElementById('use-location').checked;
+        
+        if (!medicineName) {
+            alert('Please enter a medicine name');
+            return;
+        }
+        
+        // Show loading
+        document.getElementById('loading-indicator').style.display = 'inline-block';
+        document.getElementById('search-results').innerHTML = '';
+        
+        // Get user location if enabled
+        if (useLocation && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                position => performSearch(medicineName, position.coords.latitude, position.coords.longitude),
+                error => {
+                    console.error('Geolocation error:', error);
+                    performSearch(medicineName, null, null);
+                }
+            );
+        } else {
+            performSearch(medicineName, null, null);
+        }
+    }
+    
+    function performSearch(medicineName, lat, lng) {
+        fetch('/api/search-medicines', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                medicine_name: medicineName,
+                lat: lat,
+                lng: lng
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('loading-indicator').style.display = 'none';
+            
+            if (data.error) {
+                document.getElementById('search-results').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                return;
+            }
+            
+            // Display medicine info
+            let resultsHtml = `
+                <h3>${escapeHtml(data.medicine.name)}</h3>
+                <p>${escapeHtml(data.medicine.description || 'No description available.')}</p>
+                <h4>Available at:</h4>
+                <div class="list-group">
+            `;
+            
+            if (data.pharmacies.length === 0) {
+                resultsHtml += '<div class="list-group-item">No pharmacies found with this medicine in stock.</div>';
+            } else {
+                data.pharmacies.forEach(pharmacy => {
+                    const distanceText = pharmacy.distance !== null 
+                        ? `${pharmacy.distance.toFixed(2)} km away`
+                        : 'Distance not available';
+                    
+                    resultsHtml += `
+                        <div class="list-group-item">
+                            <h5 class="mb-1">${escapeHtml(pharmacy.pharmacy_name)}</h5>
+                            <p class="mb-1">${escapeHtml(pharmacy.address)}</p>
+                            <small class="text-muted">${distanceText}</small>
+                        </div>
+                    `;
+                });
+            }
+            
+            resultsHtml += '</div>';
+            document.getElementById('search-results').innerHTML = resultsHtml;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('loading-indicator').style.display = 'none';
+            document.getElementById('search-results').innerHTML = '<div class="alert alert-danger">An error occurred. Please try again.</div>';
+        });
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
+{% endblock %}
+{% endblock %}
+

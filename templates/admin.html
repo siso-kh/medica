@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Admin Dashboard</h1>
+    
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link {% if active_tab == 'overview' %}active{% endif %}" href="{{ url_for('routes.admin_dashboard') }}">Overview</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if active_tab == 'users' %}active{% endif %}" href="{{ url_for('routes.admin_users') }}">Users</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if active_tab == 'doctors' %}active{% endif %}" href="{{ url_for('routes.admin_doctors') }}">Doctors</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if active_tab == 'medicines' %}active{% endif %}" href="{{ url_for('routes.admin_medicines') }}">Medicines</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if active_tab == 'pharmacies' %}active{% endif %}" href="{{ url_for('routes.admin_pharmacies') }}">Pharmacies</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if active_tab == 'reviews' %}active{% endif %}" href="{{ url_for('routes.admin_reviews') }}">Reviews</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if active_tab == 'vip_consults' %}active{% endif %}" href="{{ url_for('routes.admin_vip_consults') }}">VIP Consults</a>
+        </li>
+    </ul>
+    
+    <!-- Tab Content -->
+    <div class="tab-content mt-4">
+        {% if active_tab == 'overview' %}
+        <div class="tab-pane fade show active">
+            <h2>Statistics</h2>
+            <div class="row">
+                <div class="col-md-3"><div class="card"><div class="card-body"><h5>{{ stats.total_users }}</h5><p>Users</p></div></div></div>
+                <div class="col-md-3"><div class="card"><div class="card-body"><h5>{{ stats.total_doctors }}</h5><p>Doctors</p></div></div></div>
+                <div class="col-md-3"><div class="card"><div class="card-body"><h5>{{ stats.total_medicines }}</h5><p>Medicines</p></div></div></div>
+                <div class="col-md-3"><div class="card"><div class="card-body"><h5>{{ stats.total_pharmacies }}</h5><p>Pharmacies</p></div></div></div>
+            </div>
+            <!-- Add more overview content as needed -->
+        </div>
+        {% endif %}
+        
+        {% if active_tab == 'users' %}
+        <div class="tab-pane fade show active">
+            <h2>Users</h2>
+            <table class="table table-striped">
+                <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>VIP</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.role }}</td>
+                        <td>{{ 'Yes' if user.is_vip else 'No' }}</td>
+                        <td>
+                            <form method="post" action="{{ url_for('routes.make_admin', user_id=user.id) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-primary">Make Admin</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        
+        {% if active_tab == 'doctors' %}
+        <div class="tab-pane fade show active">
+            <h2>Doctors</h2>
+            <table class="table table-striped">
+                <thead><tr><th>ID</th><th>Name</th><th>Specialty</th><th>Rating</th><th>Address</th></tr></thead>
+                <tbody>
+                    {% for doctor in doctors %}
+                    <tr>
+                        <td>{{ doctor.id }}</td>
+                        <td>{{ doctor.user.name }}</td>
+                        <td>{{ doctor.specialty }}</td>
+                        <td>{{ "%.1f"|format(doctor.average_rating) }}</td>
+                        <td>{{ doctor.address }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        
+        {% if active_tab == 'medicines' %}
+        <div class="tab-pane fade show active">
+            <h2>Medicines</h2>
+            <table class="table table-striped">
+                <thead><tr><th>ID</th><th>Name</th><th>Description</th></tr></thead>
+                <tbody>
+                    {% for medicine in medicines %}
+                    <tr>
+                        <td>{{ medicine.id }}</td>
+                        <td>{{ medicine.name }}</td>
+                        <td>{{ medicine.description }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        
+        {% if active_tab == 'pharmacies' %}
+        <div class="tab-pane fade show active">
+            <h2>Pharmacies</h2>
+            <table class="table table-striped">
+                <thead><tr><th>ID</th><th>Name</th><th>Address</th><th>Lat</th><th>Lng</th></tr></thead>
+                <tbody>
+                    {% for pharmacy in pharmacies %}
+                    <tr>
+                        <td>{{ pharmacy.id }}</td>
+                        <td>{{ pharmacy.name }}</td>
+                        <td>{{ pharmacy.address }}</td>
+                        <td>{{ pharmacy.lat }}</td>
+                        <td>{{ pharmacy.lng }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        
+        {% if active_tab == 'reviews' %}
+        <div class="tab-pane fade show active">
+            <h2>Reviews</h2>
+            <table class="table table-striped">
+                <thead><tr><th>ID</th><th>Doctor</th><th>Patient</th><th>Rating</th><th>Comment</th></tr></thead>
+                <tbody>
+                    {% for review in reviews %}
+                    <tr>
+                        <td>{{ review.id }}</td>
+                        <td>{{ review.doctor.user.name }}</td>
+                        <td>{{ review.patient.name }}</td>
+                        <td>{{ review.rating }}</td>
+                        <td>{{ review.comment }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        
+        {% if active_tab == 'vip_consults' %}
+        <div class="tab-pane fade show active">
+            <h2>VIP Consults</h2>
+            <table class="table table-striped">
+                <thead><tr><th>ID</th><th>Patient</th><th>Specialty</th><th>Status</th><th>Description</th></tr></thead>
+                <tbody>
+                    {% for consult in vip_consults %}
+                    <tr>
+                        <td>{{ consult.id }}</td>
+                        <td>{{ consult.patient.name }}</td>
+                        <td>{{ consult.specialty }}</td>
+                        <td>{{ consult.status }}</td>
+                        <td>{{ consult.description[:50] }}...</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
