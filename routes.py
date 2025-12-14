@@ -512,3 +512,59 @@ def make_admin(user_id):
     flash(f'{user.name} is now an admin.', 'success')
     return redirect(url_for('routes.admin_users'))
 
+
+@bp.route('/my-availability', methods=['GET', 'POST'])
+@login_required
+def my_availability():
+    """Doctor availability management"""
+    if current_user.role != 'doctor':
+        flash('Access denied. Doctor account required.', 'danger')
+        return redirect(url_for('routes.index'))
+    
+    doctor = current_user.doctor_profile
+    if not doctor:
+        flash('Doctor profile not found.', 'danger')
+        return redirect(url_for('routes.index'))
+    
+    if request.method == 'POST':
+        day = request.form.get('day')
+        start_time_str = request.form.get('start_time')
+        end_time_str = request.form.get('end_time')
+        
+        if not day or not start_time_str or not end_time_str:
+            flash('Please fill in all fields.', 'danger')
+            return redirect(url_for('routes.my_availability'))
+        
+        try:
+            from datetime import datetime
+            start_time = datetime.strptime(start_time_str, '%H:%M').time()
+            end_time = datetime.strptime(end_time_str, '%H:%M').time()
+            
+            if start_time >= end_time:
+                flash('Start time must be before end time.', 'danger')
+                return redirect(url_for('routes.my_availability'))
+            
+            # Check for overlapping availability on the same day
+            existing = Availability.query.filter_by(doctor_id=doctor.id, day=day).all()
+            for avail in existing:
+                if (start_time < avail.end_time and end_time > avail.start_time):
+                    flash('Time slot overlaps with existing availability.', 'warning')
+                    return redirect(url_for('routes.my_availability'))
+            
+            availability = Availability(
+                doctor_id=doctor.id,
+                day=day,
+                start_time=start_time,
+                end_time=end_time
+            )
+            db.session.add(availability)
+            db.session.commit()
+            flash('Availability added successfully!', 'success')
+        except ValueError:
+            flash('Invalid time format.', 'danger')
+        
+        return redirect(url_for('routes.my_availability'))
+    
+    availabilities = doctor.availabilities.order_by(Availability.day, Availability.start_time).all()
+    return render_template('availability.html', availabilities=availabilities)
+

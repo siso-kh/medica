@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>My Availability Schedule</h1>
+    <p>Manage your weekly availability for consultations.</p>
+    
+    <!-- Add Availability Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Add New Availability</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="day" class="form-label">Day</label>
+                        <select class="form-select" id="day" name="day" required>
+                            <option value="">Select Day</option>
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                            <option value="Saturday">Saturday</option>
+                            <option value="Sunday">Sunday</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="start_time" class="form-label">Start Time</label>
+                        <input type="time" class="form-control" id="start_time" name="start_time" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="end_time" class="form-label">End Time</label>
+                        <input type="time" class="form-control" id="end_time" name="end_time" required>
+                    </div>
+                    <div class="col-md-2 mb-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Add</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Current Availability -->
+    <div class="card">
+        <div class="card-header">
+            <h5>Current Availability</h5>
+        </div>
+        <div class="card-body">
+            {% if availabilities %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Day</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for avail in availabilities %}
+                            <tr>
+                                <td>{{ avail.day }}</td>
+                                <td>{{ avail.start_time.strftime('%H:%M') }}</td>
+                                <td>{{ avail.end_time.strftime('%H:%M') }}</td>
+                                <td>
+                                    <!-- Add delete functionality if needed -->
+                                    <button class="btn btn-sm btn-danger" onclick="deleteAvailability({{ avail.id }})">Delete</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No availability set yet. Add your first time slot above.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteAvailability(id) {
+    if (confirm('Are you sure you want to delete this availability?')) {
+        // Implement delete via AJAX or form post
+        // For now, placeholder
+        alert('Delete functionality not implemented yet.');
+    }
+}
+</script>
+{% endblock %}

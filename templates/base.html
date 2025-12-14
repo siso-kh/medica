@@ -44,6 +44,11 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('routes.medicines') }}">Medicines</a>
                     </li>
+                    {% if current_user.is_authenticated and current_user.role == 'doctor' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('routes.my_availability') }}">My Availability</a>
+                    </li>
+                    {% endif %}
                     {% if current_user.is_authenticated and current_user.is_vip %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('routes.vip_consult') }}">VIP Consult</a>

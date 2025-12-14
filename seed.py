@@ -1,7 +1,8 @@
 from faker import Faker
 from app import create_app
-from models import db, User, DoctorProfile, Medicine, Pharmacy, PharmacyStock, Review, VIPConsult, VIPConsultAssignment
+from models import db, User, DoctorProfile, Medicine, Pharmacy, PharmacyStock, Review, VIPConsult, VIPConsultAssignment, Availability
 import random
+from datetime import datetime, time
 
 fake = Faker()
 
@@ -15,6 +16,7 @@ def seed_database():
         db.session.query(PharmacyStock).delete()
         db.session.query(Pharmacy).delete()
         db.session.query(Medicine).delete()
+        db.session.query(Availability).delete()
         db.session.query(DoctorProfile).delete()
         db.session.query(User).delete()
         db.session.commit()
@@ -22,7 +24,7 @@ def seed_database():
         # Seed users (patients, doctors, admins)
         users = []
         roles = ['patient', 'doctor', 'admin']
-        for _ in range(50):  # Adjust number as needed
+        for _ in range(70):  # Adjust number as needed
             role = random.choice(roles)
             user = User(
                 name=fake.name(),
@@ -53,9 +55,31 @@ def seed_database():
                 db.session.add(doctor)
         db.session.commit()
 
+        # Seed random availability for each doctor
+        days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        for doctor in doctors:
+            num_slots = random.randint(3, 7)  # Random number of availability slots per doctor
+            for _ in range(num_slots):
+                day = random.choice(days)
+                start_hour = random.randint(8, 16)  # Start between 8 AM and 4 PM
+                duration = random.randint(1, 4)  # Duration 1-4 hours
+                end_hour = start_hour + duration
+                if end_hour > 18:  # Cap at 6 PM
+                    end_hour = 18
+                start_time = time(start_hour, 0)
+                end_time = time(end_hour, 0)
+                availability = Availability(
+                    doctor_id=doctor.id,
+                    day=day,
+                    start_time=start_time,
+                    end_time=end_time
+                )
+                db.session.add(availability)
+        db.session.commit()
+
         # Seed medicines
         medicines = []
-        for _ in range(30):  # Adjust number as needed
+        for _ in range(60):  # Adjust number as needed
             medicine = Medicine(
                 name=fake.unique.word().capitalize() + ' ' + random.choice(['Tablet', 'Syrup', 'Injection', 'Cream']),
                 description=fake.text(max_nb_chars=100)
@@ -70,8 +94,8 @@ def seed_database():
             pharmacy = Pharmacy(
                 name=fake.company() + ' Pharmacy',
                 address=fake.address(),
-                lat=round(random.uniform(-90, 90), 6),  # Random lat/lng
-                lng=round(random.uniform(-180, 180), 6)
+                lat=round(random.uniform(32.0, 38.0), 6),  # Random lat around Tunisia (32° to 38° N)
+                lng=round(random.uniform(7.0, 12.0), 6)   # Random lng around Tunisia (7° to 12° E)
             )
             pharmacies.append(pharmacy)
             db.session.add(pharmacy)
