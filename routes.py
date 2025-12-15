@@ -362,6 +362,15 @@ def search_medicines():
 @vip_required
 def vip_consult():
     """VIP consultation request form"""
+    # Check consult limit
+    if current_user.vip_plan == 'basic' and current_user.vip_consults_used >= 5:
+        flash('You have reached your Basic plan limit of 5 consultations per year. Upgrade your plan.', 'warning')
+        return redirect(url_for('routes.upgrade'))
+    elif current_user.vip_plan == 'premium' and current_user.vip_consults_used >= 10:
+        flash('You have reached your Premium plan limit of 10 consultations per year. Upgrade your plan.', 'warning')
+        return redirect(url_for('routes.upgrade'))
+    # Unlimited has no limit
+    
     if request.method == 'POST':
         description = request.form.get('description', '').strip()
         specialty = request.form.get('specialty', '').strip()
@@ -424,6 +433,11 @@ def vip_consult():
         db.session.commit()
         
         flash('VIP consultation request submitted! Doctors will be notified.', 'success')
+        
+        # After successful submission
+        current_user.vip_consults_used += 1
+        db.session.commit()
+        
         return redirect(url_for('routes.vip_consult'))
     
     # Get specialties for dropdown
@@ -433,10 +447,38 @@ def vip_consult():
     return render_template('vip_consult.html', specialties=specialty_list)
 
 
-@bp.route('/upgrade')
+@bp.route('/upgrade', methods=['GET', 'POST'])
+@login_required
 def upgrade():
-    """Upgrade to VIP page"""
-    return render_template('upgrade.html')
+    """Upgrade to VIP page — select plan and pay"""
+    plans = {
+        'basic': {'name': 'Basic', 'consults': 5, 'cost': 10.00},
+        'premium': {'name': 'Premium', 'consults': 10, 'cost': 20.00},
+        'unlimited': {'name': 'Unlimited', 'consults': -1, 'cost': 50.00}  # -1 for unlimited
+    }
+    
+    if request.method == 'POST':
+        plan = request.form.get('plan')
+        vip_code = request.form.get('vip_code', '').strip()
+        payment_success = request.form.get('payment_success', '').lower() == 'true'
+        
+        if plan not in plans:
+            flash('Invalid plan selected.', 'danger')
+            return redirect(url_for('routes.upgrade'))
+        
+        # Special code bypass or payment success
+        if vip_code == 'essths' or payment_success:
+            current_user.is_vip = True
+            current_user.vip_plan = plan
+            current_user.vip_consults_used = 0  # Reset counter
+            db.session.commit()
+            flash(f'Congratulations! You are now a VIP member with {plans[plan]["name"]} plan.', 'success')
+            return redirect(url_for('routes.index'))
+        else:
+            flash('Payment failed or invalid code. Please try again.', 'danger')
+            return redirect(url_for('routes.upgrade'))
+    
+    return render_template('upgrade.html', plans=plans)
 
 
 def admin_required(f):

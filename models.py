@@ -18,6 +18,8 @@ class User(UserMixin, db.Model):
     is_vip = db.Column(db.Boolean, default=False, nullable=False)
     balance = db.Column(db.Float, default=0.0, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    vip_plan = db.Column(db.String(20), default='none')  # 'basic', 'premium', 'unlimited'
+    vip_consults_used = db.Column(db.Integer, default=0)
     
     # Relationships
     doctor_profile = db.relationship('DoctorProfile', backref='user', uselist=False, cascade='all, delete-orphan')

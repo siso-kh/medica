@@ -3,100 +3,199 @@
 {% block title %}Upgrade to VIP - Medica{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="text-center mb-5">
-                <i class="bi bi-star-fill" style="font-size: 5rem; color: #ffc107;"></i>
-                <h1 class="fw-bold mt-3">Upgrade to VIP</h1>
-                <p class="lead text-muted">Unlock premium healthcare consultation features</p>
-            </div>
-        </div>
-    </div>
-    
+<div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-10">
-            <div class="card shadow-lg border-0">
-                <div class="card-body p-5">
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <h3 class="fw-bold mb-4">VIP Membership Features</h3>
+            <div class="text-center mb-4">
+                <h2>Choose Your VIP Plan</h2>
+                <p>Select a plan that fits your needs for VIP consultations.</p>
+            </div>
+            
+            <div class="row">
+                {% for plan_key, plan in plans.items() %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header text-center">
+                            <h4 class="card-title">{{ plan.name }}</h4>
+                        </div>
+                        <div class="card-body text-center">
+                            <h3 class="text-primary">${{ "%.2f"|format(plan.cost) }}</h3>
+                            <p class="card-text">
+                                {% if plan.consults == -1 %}
+                                    Unlimited consultations per year
+                                {% else %}
+                                    {{ plan.consults }} consultations per year
+                                {% endif %}
+                            </p>
                             <ul class="list-unstyled">
-                                <li class="mb-3">
-                                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
-                                    <strong class="ms-2">Priority Consultations</strong>
-                                    <p class="text-muted ms-4">Get consultations from top-rated doctors</p>
-                                </li>
-                                <li class="mb-3">
-                                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
-                                    <strong class="ms-2">Multiple Doctor Reviews</strong>
-                                    <p class="text-muted ms-4">Each request is sent to 5 qualified specialists</p>
-                                </li>
-                                <li class="mb-3">
-                                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
-                                    <strong class="ms-2">Document Upload</strong>
-                                    <p class="text-muted ms-4">Upload medical reports and documents</p>
-                                </li>
-                                <li class="mb-3">
-                                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
-                                    <strong class="ms-2">Direct Communication</strong>
-                                    <p class="text-muted ms-4">Get Discord links for direct contact</p>
-                                </li>
-                                <li class="mb-3">
-                                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
-                                    <strong class="ms-2">Fast Response</strong>
-                                    <p class="text-muted ms-4">Receive quicker responses from doctors</p>
-                                </li>
+                                <li>Priority doctor matching</li>
+                                <li>File upload support</li>
+                                <li>24/7 support</li>
                             </ul>
                         </div>
-                        
-                        <div class="col-md-6 text-center">
-                            <div class="pricing-box p-4 bg-light rounded">
-                                <h2 class="display-4 fw-bold text-primary mb-3">$99</h2>
-                                <p class="text-muted mb-4">One-time payment</p>
-                                
-                                {% if current_user.is_authenticated %}
-                                    {% if not current_user.is_vip %}
-                                        <form method="POST" action="/upgrade/process">
-                                            <button type="button" class="btn btn-warning btn-lg w-100" onclick="showUpgradeNote()">
-                                                <i class="bi bi-star-fill"></i> Upgrade Now
-                                            </button>
-                                        </form>
-                                        <p class="text-muted small mt-3">
-                                            <i class="bi bi-info-circle"></i> 
-                                            Note: This is a demo. In production, integrate with a payment gateway.
-                                        </p>
-                                    {% else %}
-                                        <div class="alert alert-success">
-                                            <i class="bi bi-check-circle-fill"></i> You are already a VIP member!
-                                        </div>
-                                    {% endif %}
-                                {% else %}
-                                    <a href="{{ url_for('routes.login') }}" class="btn btn-primary btn-lg w-100">
-                                        Login to Upgrade
-                                    </a>
-                                {% endif %}
-                            </div>
+                        <div class="card-footer">
+                            <button class="btn btn-primary w-100" onclick="selectPlan('{{ plan_key }}')">Select Plan</button>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="text-center mt-4">
-                <a href="{{ url_for('routes.index') }}" class="text-decoration-none">
-                    <i class="bi bi-arrow-left"></i> Back to Home
-                </a>
+                {% endfor %}
             </div>
         </div>
     </div>
 </div>
 
-{% block extra_scripts %}
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="paymentForm" novalidate>
+                <div class="modal-header">
+                    <h5 class="modal-title">Payment for <span id="planName"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="paymentAlert" class="alert d-none" role="alert"></div>
+                    
+                    <div class="mb-3 text-center">
+                        <h4>Total: $<span id="planCost"></span></h4>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Cardholder Name</label>
+                        <input type="text" name="card_name" class="form-control" placeholder="John Doe" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Card Number</label>
+                        <input type="text" name="card_number" id="card_number" class="form-control" inputmode="numeric" placeholder="1234 5678 9012 3456" required>
+                    </div>
+
+                    <div class="row g-2">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Expiry (MM/YY)</label>
+                            <input type="text" name="expiry" id="expiry" class="form-control" placeholder="MM/YY" required>
+                        </div>
+                        <div class="col-3 mb-3">
+                            <label class="form-label">CVV</label>
+                            <input type="text" name="cvv" id="cvv" class="form-control" inputmode="numeric" placeholder="123" required>
+                        </div>
+                        <div class="col-3 mb-3">
+                            <label class="form-label">ZIP</label>
+                            <input type="text" name="zip" id="zip" class="form-control" placeholder="ZIP" required>
+                        </div>
+                    </div>
+
+                    <!-- Special code under ZIP -->
+                    <div class="mb-3">
+                        <label class="form-label">Special Code (optional)</label>
+                        <input type="text" name="vip_code" id="vip_code" class="form-control" placeholder="Enter special code under ZIP">
+                        <div class="form-text">Entering "essths" will bypass payment and activate VIP immediately.</div>
+                    </div>
+                    
+                    <input type="hidden" name="plan" id="selectedPlan">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button id="paySubmit" type="submit" class="btn btn-primary">Pay & Upgrade</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+/* small styling */
+#paymentModal .modal-content { border-radius: 12px; }
+#paymentModal input.form-control { box-shadow: inset 0 1px 2px rgba(0,0,0,0.03); }
+</style>
+
 <script>
-    function showUpgradeNote() {
-        alert('This is a demonstration. In a production environment, this would integrate with a payment gateway (Stripe, PayPal, etc.) to process the VIP upgrade payment.');
+let selectedPlan = null;
+const plans = {{ plans|tojson }};
+
+function selectPlan(planKey) {
+    selectedPlan = planKey;
+    const plan = plans[planKey];
+    document.getElementById('planName').textContent = plan.name;
+    document.getElementById('planCost').textContent = plan.cost.toFixed(2);
+    document.getElementById('selectedPlan').value = planKey;
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+    modal.show();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('paymentForm');
+    const alertBox = document.getElementById('paymentAlert');
+    const SPECIAL_CODE = 'essths';
+
+    function showAlert(msg, type='danger') {
+        alertBox.className = `alert alert-${type}`;
+        alertBox.textContent = msg;
+        alertBox.classList.remove('d-none');
     }
+    function hideAlert() { alertBox.classList.add('d-none'); }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideAlert();
+
+        const fd = new FormData(form);
+        const code = (fd.get('vip_code') || '').trim();
+
+        // If special code provided and correct -> bypass payment immediately
+        if (code.toLowerCase() === SPECIAL_CODE) {
+            const bypass = new FormData();
+            bypass.append('vip_code', SPECIAL_CODE);
+            bypass.append('plan', selectedPlan);
+            try {
+                const resp = await fetch('{{ url_for("routes.upgrade") }}', { method: 'POST', body: bypass, credentials: 'same-origin' });
+                if (resp.redirected) return window.location = resp.url;
+                return window.location.reload();
+            } catch (err) {
+                showAlert('Activation failed. Try again.');
+            }
+            return;
+        }
+
+        // Basic client-side validation (demo)
+        const cardNum = (fd.get('card_number') || '').replace(/\s+/g,'');
+        const expiry = (fd.get('expiry')||'').trim();
+        const cvv = (fd.get('cvv')||'').trim();
+        const zip = (fd.get('zip')||'').trim();
+
+        if (cardNum.length < 12 || !/^\d+$/.test(cardNum)) {
+            showAlert('Invalid card number.');
+            return;
+        }
+        if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+            showAlert('Invalid expiry format. Use MM/YY.');
+            return;
+        }
+        if (!/^\d{3,4}$/.test(cvv)) {
+            showAlert('Invalid CVV.');
+            return;
+        }
+        if (!zip) {
+            showAlert('ZIP is required.');
+            return;
+        }
+
+        // Simulate payment processing (demo). In production integrate real gateway.
+        try {
+            await new Promise(r => setTimeout(r, 1000));
+            fd.append('payment_success', 'true');
+            const resp = await fetch('{{ url_for("routes.upgrade") }}', { method: 'POST', body: fd, credentials: 'same-origin' });
+            if (resp.redirected) return window.location = resp.url;
+            return window.location.reload();
+        } catch (err) {
+            showAlert('Payment processing failed. Try again.');
+        }
+    });
+});
 </script>
-{% endblock %}
 {% endblock %}
 
