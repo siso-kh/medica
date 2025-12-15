@@ -273,7 +273,8 @@ def submit_review(doctor_id):
 @bp.route('/medicines')
 def medicines():
     """Medicine finder page"""
-    return render_template('medicines.html')
+    medicines = Medicine.query.all()
+    return render_template('medicines.html', medicines=medicines)
 
 
 @bp.route('/api/search-medicines', methods=['POST'])

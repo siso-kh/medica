@@ -2,6 +2,8 @@ from flask import Flask
 from flask_login import LoginManager
 from models import db, User, Pharmacy  # Add Pharmacy import
 from config import Config
+import os  # Import os module
+
 
 # Initialize extensions
 login_manager = LoginManager()
@@ -19,7 +21,10 @@ def load_user(user_id):
 def create_app(config_class=Config):
     """Application factory pattern"""
     app = Flask(__name__)
-    app.config.from_object(config_class)
+    if os.environ.get('RENDER'):  # Detect Render environment
+        app.config.from_object('config.ProductionConfig')
+    else:
+        app.config.from_object(config_class)
     
     # Initialize extensions with app
     db.init_app(app)
