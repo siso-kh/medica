@@ -13,6 +13,7 @@ class Config:
     if db_uri.startswith('postgresql://'):
         db_uri = db_uri.replace('postgresql://', 'postgresql+pg8000://')
     SQLALCHEMY_DATABASE_URI = db_uri
+    
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # File upload configuration
