@@ -27,7 +27,11 @@ class Config:
 
 class ProductionConfig(Config):
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')  # Render sets this for PostgreSQL
+    # Database configuration for production
+    db_uri = os.environ.get('DATABASE_URL')
+    if db_uri and 'postgres' in db_uri:
+        db_uri = 'postgresql+pg8000://' + db_uri.split('://', 1)[1]
+    SQLALCHEMY_DATABASE_URI = db_uri
 
 
 class DevelopmentConfig(Config):
