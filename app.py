@@ -37,14 +37,9 @@ def create_app(config_class=Config):
     from routes import bp as routes_bp
     app.register_blueprint(routes_bp)
     
-    # Create tables and seed if empty
+    # Create tables
     with app.app_context():
         db.create_all()
-        
-        # Seed database if empty (only on first run)
-        if User.query.count() == 0:
-            from seed import seed_database
-            seed_database()
     
     return app
 
