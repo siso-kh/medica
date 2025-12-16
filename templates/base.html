@@ -75,7 +75,7 @@
                 </ul>
                 <ul class="navbar-nav">
                     {% if current_user.is_authenticated %}
-                        <li class="nav-item">
+                        <li class="nav-item justify-content-center d-flex align-items-center">
                             <span class="navbar-text me-3">Welcome, {{ current_user.name }}!</span>
                         </li>
                         {% if current_user.role == 'doctor' and current_user.doctor_profile %}
@@ -93,7 +93,7 @@
                         {% endif %}
                         {% if not current_user.is_vip %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('routes.upgrade') }}">Upgrade to VIP</a>
+                            <a class="nav-link btn btn-primary me-2" href="{{ url_for('routes.upgrade') }}">Upgrade to VIP</a>
                         </li>
                         {% endif %}
                         <li class="nav-item">

@@ -9,7 +9,10 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key'
     
     # Database configuration
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///medica.db'
+    db_uri = os.environ.get('DATABASE_URL') or 'sqlite:///medica.db'
+    if db_uri.startswith('postgresql://'):
+        db_uri = db_uri.replace('postgresql://', 'postgresql+pg8000://')
+    SQLALCHEMY_DATABASE_URI = db_uri
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # File upload configuration
