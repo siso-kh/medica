@@ -10,8 +10,8 @@ class Config:
     
     # Database configuration
     db_uri = os.environ.get('DATABASE_URL') or 'sqlite:///medica.db'
-    if db_uri.startswith('postgresql://'):
-        db_uri = db_uri.replace('postgresql://', 'postgresql+pg8000://')
+    if db_uri.startswith('postgres://') or db_uri.startswith('postgresql://'):
+        db_uri = 'postgresql+pg8000://' + db_uri.split('://', 1)[1]
     SQLALCHEMY_DATABASE_URI = db_uri
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
