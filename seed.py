@@ -4,7 +4,8 @@ from models import db, User, DoctorProfile, Medicine, Pharmacy, PharmacyStock, R
 import random
 from datetime import datetime, time
 
-fake = Faker()
+# Use English locale for English data, but with Tunisian context
+fake = Faker('en')
 
 def seed_database():
     app = create_app()
@@ -21,9 +22,9 @@ def seed_database():
         db.session.query(User).delete()
         db.session.commit()
 
-        # Seed users (patients, doctors, admins)
+        # Seed users (patients, doctors, admins, pharmacies)
         users = []
-        roles = ['patient', 'doctor', 'admin']
+        roles = ['patient', 'doctor', 'admin', 'pharmacy']
         for _ in range(70):  # Adjust number as needed
             role = random.choice(roles)
             user = User(
@@ -39,7 +40,7 @@ def seed_database():
         db.session.commit()
 
         # Seed doctor profiles for doctor users
-        specialties = ['Cardiology', 'Dermatology', 'Neurology', 'Pediatrics', 'Orthopedics', 'General Medicine']
+        specialties = ['Cardiology', 'Dermatology', 'Neurology', 'Pediatrics', 'Orthopedics', 'General Medicine', 'Internal Medicine', 'Gynecology', 'Ophthalmology', 'Dentistry']
         doctors = []
         for user in users:
             if user.role == 'doctor':
@@ -88,14 +89,71 @@ def seed_database():
             db.session.add(medicine)
         db.session.commit()
 
-        # Seed pharmacies
+        # Add common medicines for easier testing
+        common_medicines = [
+            ("Aspirin", "Pain reliever and fever reducer."),
+            ("Ibuprofen", "Anti-inflammatory drug."),
+            ("Paracetamol", "Pain reliever and fever reducer."),
+            ("Amoxicillin", "Antibiotic for bacterial infections."),
+            ("Omeprazole", "Reduces stomach acid."),
+            ("Metformin", "Diabetes medication."),
+            ("Lisinopril", "Blood pressure medication."),
+            ("Simvastatin", "Cholesterol-lowering drug."),
+            ("Levothyroxine", "Thyroid hormone replacement."),
+            ("Albuterol", "Bronchodilator for asthma."),
+        ]
+        for name, desc in common_medicines:
+            if not Medicine.query.filter_by(name=name).first():
+                medicine = Medicine(name=name, description=desc)
+                medicines.append(medicine)
+                db.session.add(medicine)
+        db.session.commit()
+
+        # Seed pharmacies with real Tunisian data
+        real_pharmacies_data = [
+            {"name": "Pharmacie Centrale", "address": "Avenue Habib Bourguiba, Tunis, Tunisia", "lat": 36.8065, "lng": 10.1815},
+            {"name": "Pharmacie Ibn Khaldoun", "address": "Rue Ibn Khaldoun, Tunis, Tunisia", "lat": 36.7992, "lng": 10.1704},
+            {"name": "Pharmacie El Medina", "address": "Souk El Medina, Tunis, Tunisia", "lat": 36.7988, "lng": 10.1658},
+            {"name": "Pharmacie Carthage", "address": "Byrsa Hill, Carthage, Tunisia", "lat": 36.8525, "lng": 10.3236},
+            {"name": "Pharmacie Sfax", "address": "Avenue de la République, Sfax, Tunisia", "lat": 34.7406, "lng": 10.7603},
+            {"name": "Pharmacie Sousse", "address": "Boulevard du 14 Janvier, Sousse, Tunisia", "lat": 35.8256, "lng": 10.6369},
+            {"name": "Pharmacie Monastir", "address": "Avenue Farhat Hached, Monastir, Tunisia", "lat": 35.7780, "lng": 10.8262},
+            {"name": "Pharmacie Bizerte", "address": "Rue de la Kasbah, Bizerte, Tunisia", "lat": 37.2744, "lng": 9.8739},
+            {"name": "Pharmacie Nabeul", "address": "Avenue Hedi Chaker, Nabeul, Tunisia", "lat": 36.4561, "lng": 10.7376},
+            {"name": "Pharmacie Hammamet", "address": "Rue de la Médina, Hammamet, Tunisia", "lat": 36.4000, "lng": 10.6167},
+            {"name": "Pharmacie Gabès", "address": "Avenue de la République, Gabès, Tunisia", "lat": 33.8815, "lng": 10.0982},
+            {"name": "Pharmacie Kairouan", "address": "Rue de la Grande Mosquée, Kairouan, Tunisia", "lat": 35.6781, "lng": 10.0963},
+            {"name": "Pharmacie Tozeur", "address": "Avenue Abou El Kacem Chebbi, Tozeur, Tunisia", "lat": 33.9197, "lng": 8.1335},
+            {"name": "Pharmacie Gafsa", "address": "Rue Ali Belhouane, Gafsa, Tunisia", "lat": 34.4250, "lng": 8.7842},
+            {"name": "Pharmacie Ariana", "address": "Avenue de la République, Ariana, Tunisia", "lat": 36.8625, "lng": 10.1956},
+            {"name": "Pharmacie Ben Arous", "address": "Rue de la Révolution, Ben Arous, Tunisia", "lat": 36.7531, "lng": 10.2189},
+            {"name": "Pharmacie Manouba", "address": "Rue de l'Indépendance, Manouba, Tunisia", "lat": 36.8100, "lng": 10.1000},
+            {"name": "Pharmacie Zaghouan", "address": "Rue de la Kasbah, Zaghouan, Tunisia", "lat": 36.4029, "lng": 10.1429},
+            {"name": "Pharmacie Beja", "address": "Rue de la République, Beja, Tunisia", "lat": 36.7256, "lng": 9.1817},
+            {"name": "Pharmacie Mahdia", "address": "Rue du 7 Novembre, Mahdia, Tunisia", "lat": 35.5047, "lng": 11.0622}
+        ]
+        
         pharmacies = []
-        for _ in range(20):  # Adjust number as needed
+        pharmacy_users = [u for u in users if u.role == 'pharmacy']
+        for i, user in enumerate(pharmacy_users):
+            data = real_pharmacies_data[i % len(real_pharmacies_data)]
             pharmacy = Pharmacy(
-                name=fake.company() + ' Pharmacy',
-                address=fake.address(),
-                lat=round(random.uniform(32.0, 38.0), 6),  # Random lat around Tunisia (32° to 38° N)
-                lng=round(random.uniform(7.0, 12.0), 6)   # Random lng around Tunisia (7° to 12° E)
+                name=data["name"],
+                address=data["address"],
+                lat=data["lat"],
+                lng=data["lng"],
+                user_id=user.id
+            )
+            pharmacies.append(pharmacy)
+            db.session.add(pharmacy)
+        # Add more pharmacies without users if needed
+        for i in range(max(0, 20 - len(pharmacy_users))):
+            data = real_pharmacies_data[(len(pharmacy_users) + i) % len(real_pharmacies_data)]
+            pharmacy = Pharmacy(
+                name=data["name"],
+                address=data["address"],
+                lat=data["lat"],
+                lng=data["lng"]
             )
             pharmacies.append(pharmacy)
             db.session.add(pharmacy)
@@ -108,6 +166,18 @@ def seed_database():
                     pharmacy_id=pharmacy.id,
                     medicine_id=medicine.id,
                     quantity=random.randint(0, 100)
+                )
+                db.session.add(stock)
+        db.session.commit()
+
+        # Ensure every medicine has at least one pharmacy stock
+        for medicine in medicines:
+            if not PharmacyStock.query.filter_by(medicine_id=medicine.id).first():
+                pharmacy = random.choice(pharmacies)
+                stock = PharmacyStock(
+                    pharmacy_id=pharmacy.id,
+                    medicine_id=medicine.id,
+                    quantity=random.randint(1, 50)
                 )
                 db.session.add(stock)
         db.session.commit()
@@ -156,7 +226,7 @@ def seed_database():
                     db.session.add(assignment)
         db.session.commit()
 
-        print("Database seeded with random data!")
+        print("Database seeded with English data from Tunisia!")
 
 if __name__ == '__main__':
     seed_database()
